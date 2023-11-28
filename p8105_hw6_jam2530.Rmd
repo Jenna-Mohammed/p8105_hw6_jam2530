@@ -5,3 +5,33 @@ date: '2023-11-28'
 output: github_document
 ---
 
+```{r}
+library(readr)
+library(tidyverse)
+library(p8105.datasets)
+```
+
+# Problem 1
+```{r}
+urlfile = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
+
+data <- read_csv(url(urlfile))
+```
+
+# Problem 2 
+
+Loading in the data for problem 2
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2022-01-01",
+    date_max = "2022-12-31") |>
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) |>
+  select(name, id, everything())
+```
