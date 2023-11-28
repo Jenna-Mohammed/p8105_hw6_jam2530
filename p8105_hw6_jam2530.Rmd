@@ -34,4 +34,45 @@ weather_df =
     tmin = tmin / 10,
     tmax = tmax / 10) |>
   select(name, id, everything())
+
+view(weather_df)
 ```
+
+function to generate bootstrap samples
+
+```{r}
+
+
+boot_sample = function(weather_df) {
+  sample_frac(weather_df, replace = TRUE)
+  fit <- lm(tmax ~ tmin + prcp, data = weather_df)
+}
+
+```
+
+```{r}
+boot_sample(weather_df) |> 
+  ggplot(aes(x = tmin, y = prcp)) + 
+  geom_point(alpha = .5) +
+  stat_smooth(method = "lm")
+```
+
+
+stating the number of bootstrap samples 
+
+```{r}
+ boot_sample <- 5000
+```
+
+Drawing 5000 boostrap samples
+
+```{r}
+#boot_straps = 
+#  tibble(strap_number = 1:5000) |> 
+#  mutate(
+#    strap_sample = map(strap_number, \(i) boot_sample(df = weather_df))
+#  )
+
+#boot_straps
+```
+
