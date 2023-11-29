@@ -118,7 +118,7 @@ Regression model for birthweight
 ```{r}
 regression_model = lm(bwt ~ malform + smoken + gaweeks + babysex , data = birthweight_df)
 
-birthweight_df |>
+residual_plot <- birthweight_df |>
   add_predictions(regression_model) |>
   add_residuals(regression_model) |>
   ggplot(aes(x = pred, y = resid)) +
@@ -128,4 +128,15 @@ birthweight_df |>
 
 ```
 
+Comparing model to other models 
+
+
+- model using length at birth and gestational age as predictors
+
+```{r}
+
+ model_1 = lm(bwt ~ blength + gaweeks, data = birthweight_df)
+
+ model_2 = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = birthweight_df)
+```
 
