@@ -8,6 +8,7 @@ output: github_document
 ```{r}
 library(readr)
 library(tidyverse)
+library(modelr)
 library(p8105.datasets)
 ```
 
@@ -38,15 +39,98 @@ weather_df =
 view(weather_df)
 ```
 
+fitting a regression model 
+
+```{r}
+fit <- lm(tmax ~ tmin + prcp, data = weather_df) |>
+  broom::tidy() |> 
+  knitr::kable(digits = 3)
+```
+
+Creating function for bootstrap
+
+```{r}
+boot_sample = function(weather_df) {
+  sample_frac(weather_df, replace = TRUE)
+}
+```
+
+Estimate for r hat squared 
+
+```{r}
+r_squared = 
+  weather_df |>
+  bootstrap(n = 5000) |>
+  mutate(
+    models = map(.x = strap, ~lm(tmax ~ tmin, data = .x)),
+    results = map(models, broom::glance)) |>
+  unnest(results)
+
+r_squared %>% 
+  ggplot(aes(x = r.squared)) + 
+  geom_density()
+
+```
+
+Estimate for log(beta_0 * beta_1)
+
+```{r}
+log_var =
+  weather_df |>
+  bootstrap(n = 5000) |>
+  mutate(
+    models = map(.x = strap, ~lm(tmax ~ tmin, data = .x)),
+    results = map(models, broom::glance)) |>
+  select(strap_number, term, estimate) |>
+  unnest(results) |>
+  mutate(
+    log_function = log(`(Intercept)`*tmin)
+  ) 
+
+log_var|> 
+  ggplot(aes(x = log_function)) + 
+  geom_density()
+
+```
+
+
+
+###### IGNORE #########
+
+stating the number of bootstrap samples 
+
+```{r}
+ boot_number <- 5000
+```
+
+
+
 function to generate bootstrap samples
 
 ```{r}
 
 
-boot_sample = function(weather_df) {
+boot_function = function(weather_df) {
   sample_frac(weather_df, replace = TRUE)
   fit <- lm(tmax ~ tmin + prcp, data = weather_df)
+  return(summary(model)[["r.squared"]])
 }
+
+
+num_samples <- 5000
+
+
+
+
+weather_bootstrap1 = 
+  weather_df %>% 
+  modelr::bootstrap(n = 5000, id = "strap_number") %>% 
+  mutate(
+    models = map(strap, ~ lm(tmax ~ tmin, data = .x)),
+    results = map(models, broom::tidy)) %>% 
+  select(strap_number, results) %>% 
+  unnest(results) 
+weather_bootstrap1
 
 ```
 
@@ -58,21 +142,4 @@ boot_sample(weather_df) |>
 ```
 
 
-stating the number of bootstrap samples 
-
-```{r}
- boot_sample <- 5000
-```
-
-Drawing 5000 boostrap samples
-
-```{r}
-#boot_straps = 
-#  tibble(strap_number = 1:5000) |> 
-#  mutate(
-#    strap_sample = map(strap_number, \(i) boot_sample(df = weather_df))
-#  )
-
-#boot_straps
-```
 
