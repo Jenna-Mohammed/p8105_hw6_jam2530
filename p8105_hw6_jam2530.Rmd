@@ -86,7 +86,31 @@ r_squared |>
 ```
 
 
+The 95% confidence interval for R^2 is (0.887, 0.939)
 
+
+
+
+# Problem 3 
+
+let's read in and clean the data for this problem 
+
+```{r}
+
+birthweight_df = read_csv("./birthweight.csv")
+
+birthweight_df |>
+  janitor::clean_names() |>
+  drop_na() |>
+  mutate(
+    babysex = factor(babysex, labels = c("male", "female")
+  ), 
+   frace = factor(frace, labels = c("White", "Black", "Asian", "Puerto Rican", "Other")),
+   mrace = factor(mrace, labels = c("White", "Black", "Asian", "Puerto Rican")
+  )) 
+
+view(birthweight_df)
+```
 
 
 
