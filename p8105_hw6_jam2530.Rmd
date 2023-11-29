@@ -66,80 +66,28 @@ r_squared =
     results = map(models, broom::glance)) |>
   unnest(results)
 
-r_squared %>% 
+view(r_squared)
+
+r_squared_plot <- r_squared |>
   ggplot(aes(x = r.squared)) + 
   geom_density()
 
 ```
 
-Estimate for log(beta_0 * beta_1)
+Performing a 95% Confidence Interval for R^2
+
 
 ```{r}
-log_var =
-  weather_df |>
-  bootstrap(n = 5000) |>
-  mutate(
-    models = map(.x = strap, ~lm(tmax ~ tmin, data = .x)),
-    results = map(models, broom::glance)) |>
-  select(strap_number, term, estimate) |>
-  unnest(results) |>
-  mutate(
-    log_function = log(`(Intercept)`*tmin)
-  ) 
-
-log_var|> 
-  ggplot(aes(x = log_function)) + 
-  geom_density()
-
+r_squared |>
+  summarize(
+    lower_limit = quantile(r.squared, 0.025), 
+    upper_limit = quantile(r.squared, 0.975)) |>
+  knitr::kable(digits = 3)
 ```
 
 
 
-###### IGNORE #########
 
-stating the number of bootstrap samples 
-
-```{r}
- boot_number <- 5000
-```
-
-
-
-function to generate bootstrap samples
-
-```{r}
-
-
-boot_function = function(weather_df) {
-  sample_frac(weather_df, replace = TRUE)
-  fit <- lm(tmax ~ tmin + prcp, data = weather_df)
-  return(summary(model)[["r.squared"]])
-}
-
-
-num_samples <- 5000
-
-
-
-
-weather_bootstrap1 = 
-  weather_df %>% 
-  modelr::bootstrap(n = 5000, id = "strap_number") %>% 
-  mutate(
-    models = map(strap, ~ lm(tmax ~ tmin, data = .x)),
-    results = map(models, broom::tidy)) %>% 
-  select(strap_number, results) %>% 
-  unnest(results) 
-weather_bootstrap1
-
-```
-
-```{r}
-boot_sample(weather_df) |> 
-  ggplot(aes(x = tmin, y = prcp)) + 
-  geom_point(alpha = .5) +
-  stat_smooth(method = "lm")
-```
 
 
 
