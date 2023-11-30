@@ -114,7 +114,7 @@ log_estimate=
     log_function = log(`(Intercept)`*tmin)
   ) 
 
-log_plot<- log_estimate %>%
+log_plot<- log_estimate |>
   ggplot(aes(x = log_function)) + 
   geom_density() +
   labs( 
@@ -123,6 +123,15 @@ log_plot<- log_estimate %>%
     title = "?")
 ```
 
+Performing a 95% CI for log 
+
+```{r}
+log_estimate |>
+  summarize(
+    lower_limit = quantile(log_function, 0.025), 
+    upper_limit = quantile(log_function, 0.975)) |>
+  knitr::kable(digits = 3)
+```
 
 
 # Problem 3 
