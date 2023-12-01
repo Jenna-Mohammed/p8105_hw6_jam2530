@@ -76,6 +76,8 @@ r_squared_plot <- r_squared |>
     y = "?",
     title = "?")
 
+print(r_squared_plot)
+
 ```
 
 Performing a 95% Confidence Interval for R^2
@@ -121,6 +123,8 @@ log_plot<- log_estimate |>
     x = "Log Function",
     y = "?",
     title = "?")
+
+print(log_plot)
 ```
 
 Performing a 95% CI for log 
