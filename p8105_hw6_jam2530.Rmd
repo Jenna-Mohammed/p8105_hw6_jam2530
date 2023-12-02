@@ -1,11 +1,11 @@
 ---
-title: "P8105_hw6_jjam2530"
+title: "P8105_hw6_jam2530"
 author: "Jenna Mohammed"
 date: '2023-11-28'
 output: github_document
 ---
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(readr)
 library(tidyverse)
 library(modelr)
@@ -21,7 +21,7 @@ data <- read_csv(url(urlfile))
 
 # Problem 2 
 
-Loading in the data for problem 2
+#### Loading in and cleaning data
 
 ```{r}
 weather_df = 
@@ -39,7 +39,7 @@ weather_df =
 view(weather_df)
 ```
 
-fitting a regression model 
+#### Fitting a regression model 
 
 ```{r}
 fit <- lm(tmax ~ tmin + prcp, data = weather_df) |>
@@ -47,7 +47,7 @@ fit <- lm(tmax ~ tmin + prcp, data = weather_df) |>
   knitr::kable(digits = 3)
 ```
 
-Creating function for bootstrap
+#### Creating function for bootstrap
 
 ```{r}
 boot_sample = function(weather_df) {
@@ -55,7 +55,7 @@ boot_sample = function(weather_df) {
 }
 ```
 
-Estimate for r hat squared 
+#### Creating Estimate and Plot for R^2
 
 ```{r}
 r_squared = 
@@ -80,7 +80,7 @@ print(r_squared_plot)
 
 ```
 
-Performing a 95% Confidence Interval for R^2
+#### Performing a 95% Confidence Interval for R^2
 
 
 ```{r}
@@ -91,10 +91,9 @@ r_squared |>
   knitr::kable(digits = 3)
 ```
 
-
 The 95% confidence interval for R^2 is (0.887, 0.939)
 
-Creating estimate for log(beta_0 * beta_1)
+#### Creating estimate for log(beta_0 * beta_1)
 
 ```{r}
 
@@ -127,7 +126,7 @@ log_plot<- log_estimate |>
 print(log_plot)
 ```
 
-Performing a 95% CI for log 
+#### Performing a 95% CI for log 
 
 ```{r}
 log_estimate |>
@@ -140,7 +139,7 @@ log_estimate |>
 
 # Problem 3 
 
-let's read in and clean the data for this problem 
+#### Reading in and cleaning the data
 
 ```{r}
 
@@ -160,7 +159,7 @@ view(birthweight_df)
 ```
 
 
-Regression model for birthweight
+#### Regression model for birthweight
 
 ```{r}
 regression_model = lm(bwt ~ malform + smoken + gaweeks + babysex , data = birthweight_df)
@@ -175,15 +174,61 @@ residual_plot <- birthweight_df |>
 print(residual_plot)
 ```
 
-Comparing model to other models 
+#### Comparing model to other models 
 
 
-- model using length at birth and gestational age as predictors
+- We will create model 2 using `blength` and `gaweeks` as predictors 
+- We will create model 3 using `bhead`, `blength`, `babysex`, anf their interactions as predictors
 
 ```{r}
 
- model_1 = lm(bwt ~ blength + gaweeks, data = birthweight_df)
+ model_2 = lm(bwt ~ blength + gaweeks, data = birthweight_df)
 
- model_2 = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = birthweight_df)
+ model_3 = lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = birthweight_df)
 ```
 
+#### Testing the models
+
+```{r}
+cv_model <- birthweight_df |> 
+  crossv_mc( 100) |>
+  mutate(
+    train = map(train,as_tibble),
+    test = map(test,as_tibble)
+  )
+```
+
+```{r}
+cv_model =
+    cv_model  |>
+  mutate(
+    m1 = map(train, ~ lm(bwt ~ malform + smoken + gaweeks + babysex , data = .x)),
+    m2 = map(train, ~lm(bwt ~ blength + gaweeks,  data = .x)),
+    m3 = map(train, ~lm(bwt ~ babysex + blength + bhead + babysex * blength + babysex * bhead + blength * bhead + babysex * blength * bhead, data = .x))
+    ) |>
+  
+  mutate(
+    rmse_m1 = map2_dbl(m1, test, ~rmse(model = .x, data = .y)),
+    rmse_m2 = map2_dbl(m2, test, ~rmse(model = .x, data = .y)),
+    rmse_m3 = map2_dbl(m3, test, ~rmse(model = .x, data = .y)))
+```
+
+```{r}
+cv_model |> 
+  select(starts_with("rmse")) |>
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") |>
+  mutate(model = fct_inorder(model)) |>
+  ggplot(aes(x = model, y = rmse, fill = model)) + 
+  geom_violin()+
+  labs(
+    x = "Model",
+    y = "RMSE",
+    title = "Plot of Model against RMSE"
+  )
+```
+
+The plot above shows that model 3 is the preferred model. Compared to the other two models, model 3 has the lowest RMSE, meaning that is has the smallest difference between the predicted and actual values
