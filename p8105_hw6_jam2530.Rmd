@@ -172,7 +172,7 @@ residual_plot <- birthweight_df |>
   geom_point() +
   geom_smooth()
 
-
+print(residual_plot)
 ```
 
 Comparing model to other models 
