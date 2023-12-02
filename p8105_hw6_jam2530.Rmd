@@ -73,8 +73,8 @@ r_squared_plot <- r_squared |>
   geom_density() +
   labs( 
     x = "R Squared",
-    y = "?",
-    title = "?")
+    y = "Density",
+    title = "Plot of R Squared and Density")
 
 print(r_squared_plot)
 
@@ -120,8 +120,8 @@ log_plot<- log_estimate |>
   geom_density() +
   labs( 
     x = "Log Function",
-    y = "?",
-    title = "?")
+    y = "Density",
+    title = "Plot of Log Function and Density")
 
 print(log_plot)
 ```
@@ -169,7 +169,12 @@ residual_plot <- birthweight_df |>
   add_residuals(regression_model) |>
   ggplot(aes(x = pred, y = resid)) +
   geom_point() +
-  geom_smooth()
+  geom_smooth() +
+  labs(
+    x = "Fitted",
+    y = "Residuals",
+    title = "Plot of Fitted values and Residuals"
+  )
 
 print(residual_plot)
 ```
